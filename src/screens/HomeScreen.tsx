@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Animated,
   Image,
   Modal,
   PermissionsAndroid,
@@ -22,7 +23,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, layout, typography } from '../constants/theme';
-import { featuredRestaurants, specials } from '../data/homeData';
+import { featuredRestaurants, specials, promotions } from '../data/homeData';
 import WeatherAlertTooltip from '../components/WeatherAlertTooltip';
 import { useWeatherAlert } from '../contexts/WeatherAlertContext';
 import type { RootStackParamList, RootTabParamList } from '../types/navigation';
@@ -46,6 +47,20 @@ type AddressOption = {
   line1: string;
   line2: string;
   shortLabel: string;
+};
+
+type UpcomingEvent = {
+  title: string;
+  subtitle: string;
+  ctaText: string;
+};
+
+type HeroSlide = {
+  id: string;
+  tag: string;
+  title: string;
+  subtitle: string;
+  image: string;
 };
 
 const addressOptions: AddressOption[] = [
@@ -72,6 +87,33 @@ const addressOptions: AddressOption[] = [
   },
 ];
 
+const heroSlides: HeroSlide[] = [
+  {
+    id: 'fresh-bites',
+    tag: 'Fresh Picks',
+    title: 'Lunch that feels a little more special',
+    subtitle: 'Swipe through hand-picked meals, fast delivery, and limited-time offers.',
+    image:
+      'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80',
+  },
+  {
+    id: 'specials',
+    tag: 'Today\'s Specials',
+    title: 'Seasonal dishes from local favorites',
+    subtitle: 'Explore standout dishes curated for the current mood and weather.',
+    image:
+      'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=900&q=80',
+  },
+  {
+    id: 'promotions',
+    tag: 'Promotions',
+    title: 'Save more with every swipe',
+    subtitle: 'Unlock offers and delivery deals from restaurants nearby.',
+    image:
+      'https://images.unsplash.com/photo-1526234362653-3b75a0b9b5f0?auto=format&fit=crop&w=900&q=80',
+  },
+];
+
 const GOOGLE_MAPS_API_KEY = 'AIzaSyAR4jzABer8rctIaR95zM5IWBXu5R1KUYc';
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
@@ -82,6 +124,11 @@ type HomeScreenNavigationProp = CompositeNavigationProp<
 const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { isBadWeather, show } = useWeatherAlert();
+  const heroSlideCount = heroSlides.length;
+  const [activeHeroIndex, setActiveHeroIndex] = React.useState(0);
+  const heroFadeAnim = React.useRef(new Animated.Value(0)).current;
+  const heroSlideAnim = React.useRef(new Animated.Value(24)).current;
+  const [upcomingEvent] = React.useState<UpcomingEvent | null>(null);
   const [selectedAddressId, setSelectedAddressId] = React.useState(addressOptions[0]?.id ?? '');
   const [isAddressSheetOpen, setIsAddressSheetOpen] = React.useState(false);
   const [currentCoords, setCurrentCoords] = React.useState<{ latitude: number; longitude: number } | null>(null);
@@ -164,6 +211,36 @@ const HomeScreen = () => {
   React.useEffect(() => {
     fetchCurrentLocation();
   }, [fetchCurrentLocation]);
+
+  React.useEffect(() => {
+    if (heroSlideCount < 2) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      setActiveHeroIndex(prev => (prev + 1) % heroSlideCount);
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [heroSlideCount]);
+
+  React.useEffect(() => {
+    heroFadeAnim.setValue(0);
+    heroSlideAnim.setValue(24);
+
+    Animated.parallel([
+      Animated.timing(heroFadeAnim, {
+        toValue: 1,
+        duration: 450,
+        useNativeDriver: true,
+      }),
+      Animated.timing(heroSlideAnim, {
+        toValue: 0,
+        duration: 450,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [activeHeroIndex, heroFadeAnim, heroSlideAnim]);
 
   React.useEffect(() => {
     if (!currentCoords) {
@@ -300,7 +377,7 @@ const HomeScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-
+      {upcomingEvent ? (
         <View style={styles.heroCard}>
           <GlassLayer />
           <View style={styles.heroImageContainer}>
@@ -327,6 +404,48 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
+      ) : (
+        <View style={styles.heroCard}>
+          <GlassLayer />
+          <View style={styles.heroImageContainer}>
+            {heroSlides[activeHeroIndex] ? (
+              <Animated.View
+                style={[
+                  styles.heroImageMotion,
+                  {
+                    opacity: heroFadeAnim,
+                    transform: [{ translateX: heroSlideAnim }],
+                  },
+                ]}
+              >
+                <Image
+                  source={{ uri: heroSlides[activeHeroIndex].image }}
+                  style={styles.heroImage}
+                />
+              </Animated.View>
+            ) : null}
+            <View style={styles.heroDots}>
+              {heroSlides.map((slide, index) => (
+                <View
+                  key={slide.id}
+                  style={[styles.heroDot, index === activeHeroIndex ? styles.heroDotActive : null]}
+                />
+              ))}
+            </View>
+          </View>
+          <View style={styles.heroContent}>
+            <View style={styles.eventBadge}>
+              <Calendar size={12} color="#FFB000" />
+              <Text style={styles.eventBadgeText}>UPCOMING EVENT</Text>
+            </View>
+            <Text style={styles.heroTitle}>Celebrate Chloe's Birthday Soon!</Text>
+            <Text style={styles.heroSubtitle}>Make her day special with her favorite artisanal treats and desserts from the best bakeries.</Text>
+            <TouchableOpacity style={styles.planButton}>
+              <Text style={styles.planButtonText}>Plan Party</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Today's Specials</Text>
@@ -357,6 +476,46 @@ const HomeScreen = () => {
               </View>
             </TouchableOpacity>
           ))}
+        </ScrollView>
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Active Promotions</Text>
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.horizontalScroll}
+          contentContainerStyle={styles.horizontalScrollContent}
+        >
+          {promotions.map((promo, index) => {
+            const isAlternate = index % 2 === 1;
+            return (
+              <TouchableOpacity key={promo.id} style={styles.promoBanner}>
+                <View style={styles.promoBannerContent}>
+                  <>
+                    <View style={styles.promoBannerDiscount}>
+                      <LinearGradient
+                        colors={['#FF7351', '#FF5733']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.discountGradient}
+                      >
+                        <Text style={styles.discountValue}>{promo.discount}</Text>
+                        <Text style={styles.discountLabel}>OFF</Text>
+                      </LinearGradient>
+                    </View>
+                    <View style={styles.promoBannerText}>
+                      <Text style={styles.promoBannerTitle} numberOfLines={2}>{promo.title}</Text>
+                      <View style={styles.promoCodeChip}>
+                        <Text style={styles.promoCodeChipText}>{promo.code}</Text>
+                      </View>
+                      <Text style={styles.promoExpiry}>{promo.expiresIn}</Text>
+                    </View>
+                  </>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
 
         <View style={styles.sectionHeader}>
@@ -511,10 +670,39 @@ const styles = StyleSheet.create({
   heroImageContainer: {
     width: '100%',
     aspectRatio: 16 / 10,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  heroImageMotion: {
+    width: '100%',
+    height: '100%',
   },
   heroImage: {
     width: '100%',
     height: '100%',
+  },
+  heroDots: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  heroDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.35)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+  },
+  heroDotActive: {
+    width: 20,
+    backgroundColor: colors.primary,
+    borderColor: 'rgba(255, 176, 0, 0.5)',
   },
   heroOverlay: {
     position: 'absolute',
@@ -643,6 +831,90 @@ const styles = StyleSheet.create({
   ratingText: {
     color: colors.textSecondary,
     fontSize: typography.sm,
+  },
+  promoBanner: {
+    width: 320,
+    height: 140,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    backgroundColor: colors.glass,
+    position: 'relative',
+  },
+  promoBannerBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 20,
+  },
+  promoBannerContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    justifyContent: 'space-between',
+    zIndex: 1,
+    gap: 12,
+  },
+  promoBannerText: {
+    flex: 1,
+    gap: 8,
+  },
+  promoBannerTitle: {
+    color: colors.textPrimary,
+    fontSize: typography.md,
+    fontWeight: '700',
+    lineHeight: 20,
+  },
+  promoCodeChip: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 176, 0, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 176, 0, 0.5)',
+  },
+  promoCodeChipText: {
+    color: colors.primary,
+    fontSize: typography.sm,
+    fontWeight: 'bold',
+    letterSpacing: 0.4,
+  },
+  promoExpiry: {
+    color: colors.textMuted,
+    fontSize: typography.sm,
+    fontWeight: '500',
+  },
+  promoBannerDiscount: {
+    marginLeft: 2,
+  },
+  discountGradient: {
+    width: 80,
+    height: 80,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  discountValue: {
+    color: colors.black,
+    fontSize: typography.displayXl,
+    fontWeight: '900',
+    lineHeight: 32,
+  },
+  discountLabel: {
+    color: colors.black,
+    fontSize: typography.sm,
+    fontWeight: 'bold',
+    letterSpacing: 0.8,
   },
   restaurantList: {
     paddingHorizontal: layout.screenPadding,

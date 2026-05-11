@@ -17,6 +17,15 @@ export type Restaurant = {
   image: string;
 };
 
+export type Promotion = {
+  id: number;
+  title: string;
+  discount: string;
+  code: string;
+  expiresIn: string;
+  image: string;
+};
+
 export const specials: SpecialDish[] = [
   {
     id: 1,
@@ -67,5 +76,44 @@ export const featuredRestaurants: Restaurant[] = [
     rating: '4.9',
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuAlnLwf2D_Zd5svruTzgK0zXRGFw1i9Oq2rhEPqV3uWc7Yw2sIBGW_SoD0gVTZORY1YVu6OQsagR__JPUODmfZRoK55xUKKnlGPHA3L8TAzhFfN5eiqGCMVN5r5vucxd44KYj-YuTSfxQESN2a6QQb9pZvFkPe2YhQ0veOWSyxoxtnJ91xy-9JXGGywkfREDoeOdhdbw0AxSGakGNk58sZOh0egkpgce8lXAcM2uqyIf1NfdzD81FHzeQyqG193GqIueGXJLyew_d0',
+  },
+];
+
+export const promotions: Promotion[] = [
+  {
+    id: 1,
+    title: 'Welcome Back! 50% Off Your Order',
+    discount: '50%',
+    code: 'WELCOME50',
+    expiresIn: 'Ends in 2 days',
+    image:
+      'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=500&q=80',
+  },
+  {
+    id: 2,
+    title: 'Free Delivery on Orders Over $35',
+    discount: 'Free',
+    code: 'FREEDELIVERY',
+    expiresIn: 'Ends in 5 days',
+    image:
+      'https://images.unsplash.com/photo-1555939594-58d7cb561a1f?auto=format&fit=crop&w=500&q=80',
+  },
+  {
+    id: 3,
+    title: 'Double Points on All Drinks',
+    discount: '2x',
+    code: 'DOUBLEPOINTS',
+    expiresIn: 'Ends today',
+    image:
+      'https://images.unsplash.com/photo-1572688684789-1c1dced6236e?auto=format&fit=crop&w=500&q=80',
+  },
+  {
+    id: 4,
+    title: 'Lunch Special: $5 Off Any Meal',
+    discount: '$5',
+    code: 'LUNCH5',
+    expiresIn: 'Ends in 3 days',
+    image:
+      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80',
   },
 ];
