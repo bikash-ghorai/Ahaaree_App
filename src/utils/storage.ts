@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import type { IUser } from '../types';
+
 const AUTH_TOKEN = '@token';
 const USER_DETAILS = '@userdetailsToAsyncStore';
 const LOCATION = '@location';
@@ -40,12 +42,10 @@ export const deleteAuthTokenFromAsyncStore = async (): Promise<boolean> => {
 };
 
 // -----------User Details------
-export const getUserDetailsFromAsyncStore = async (): Promise<
-  string | null
-> => {
+export const getUserDetailsFromAsyncStore = async (): Promise<IUser | null> => {
   try {
     const user_data = await AsyncStorage.getItem(USER_DETAILS);
-    return user_data != null ? JSON.parse(user_data) : null;
+    return user_data != null ? (JSON.parse(user_data) as IUser) : null;
   } catch (e) {
     console.log('error', e);
     return null;
@@ -53,7 +53,7 @@ export const getUserDetailsFromAsyncStore = async (): Promise<
 };
 
 export const setUserDetailsToAsyncStore = async (
-  value: string,
+  value: IUser,
 ): Promise<boolean> => {
   try {
     const user_data = JSON.stringify(value);

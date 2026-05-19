@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   ScrollView,
@@ -25,9 +25,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, layout, typography } from '../constants/theme';
+import type { IUser } from '../types';
 import type { RootStackParamList } from '../types/navigation';
 import { logout } from '../redux/user/userAction';
 import { useDispatch } from '../redux/store';
+import { getUserDetailsFromAsyncStore } from '../utils/storage';
 
 const circleMembers = [
   'https://api.dicebear.com/9.x/adventurer/png?seed=ava',
@@ -47,12 +49,31 @@ const ProfileScreen = () => {
   const dispatch = useDispatch();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [userInfo, setUserInfo] = useState<IUser | null>(null);
   const hasActivePlan = false;
   const memberBadgeText = hasActivePlan
     ? 'Premium\nMember'
     : 'Standard\nMember';
   const vipStatusText = hasActivePlan ? 'Active' : 'Inactive';
   const planButtonText = hasActivePlan ? 'Manage Plan' : 'Choose Plan';
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadUserInfo = async () => {
+      const storedUserInfo = await getUserDetailsFromAsyncStore();
+
+      if (isMounted) {
+        setUserInfo(storedUserInfo);
+      }
+    };
+
+    loadUserInfo();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,8 +115,12 @@ const ProfileScreen = () => {
             </View>
           </View>
 
-          <Text style={styles.profileName}>Sarah Jenkins</Text>
-          <Text style={styles.profileEmail}>sarah.j@lifestyle.com</Text>
+          <Text style={styles.profileName}>
+            {userInfo?.first_name || 'Your Name'} {userInfo?.last_name || ''}
+          </Text>
+          <Text style={styles.profileEmail}>
+            {userInfo?.phone ? `+91 ${userInfo.phone}` : 'Phone number not available'}
+          </Text>
         </View>
 
         <View style={styles.walletVipSection}>
@@ -108,7 +133,7 @@ const ProfileScreen = () => {
 
                 <View>
                   <Text style={styles.walletVipLabel}>WALLET BALANCE</Text>
-                  <Text style={styles.walletVipAmount}>$425.50</Text>
+                  <Text style={styles.walletVipAmount}>₹{userInfo?.balance?.toFixed(2) || '0.00'}</Text>
                 </View>
               </View>
 
@@ -120,7 +145,7 @@ const ProfileScreen = () => {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.walletVipDivider} />
+            {/* <View style={styles.walletVipDivider} />
 
             <View style={styles.walletVipRow}>
               <View style={styles.walletVipLeftBlock}>
@@ -167,11 +192,11 @@ const ProfileScreen = () => {
                   {planButtonText}
                 </Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
           </View>
         </View>
 
-        <View style={styles.sectionHeaderRow}>
+        {/* <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitle}>My Circle</Text>
           <TouchableOpacity onPress={() => navigation.navigate('MyCircle')}>
             <Text style={styles.sectionLinkText}>View All</Text>
@@ -206,7 +231,7 @@ const ProfileScreen = () => {
             <UserPlus size={17} color={colors.textMuted} />
             <Text style={styles.inviteButtonText}>Invite Friends</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         <View style={styles.sectionGroup}>
           <Text style={styles.sectionTitle}>Account Settings</Text>
@@ -251,7 +276,7 @@ const ProfileScreen = () => {
 
             <View style={styles.listDivider} />
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.listRow}
               onPress={() => navigation.navigate('ReferEarn')}
             >
@@ -266,7 +291,7 @@ const ProfileScreen = () => {
                 </View>
                 <ChevronRight size={20} color="#6C7078" />
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               style={styles.listRow}
@@ -415,7 +440,7 @@ const styles = StyleSheet.create({
   },
   profileName: {
     color: colors.textPrimary,
-    fontSize: typography.display4xl,
+    fontSize: typography.display2xl,
     lineHeight: 56,
     fontWeight: '700',
     marginTop: 13,

@@ -35,6 +35,11 @@ type RestaurantCard = {
   leftFooterText?: string;
 };
 
+type RestaurantListItem = IRestaurant & {
+  details?: string;
+  hasVip?: boolean;
+};
+
 const cuisineChips = [
   'All Cuisines',
   'Michelin Star',
@@ -100,7 +105,9 @@ const RestaurantList = () => {
   const isFocused = useIsFocused();
   const { isBadWeather, show } = useWeatherAlert();
 
-  const [restaurants, setRestaurants] = useState<Array<IRestaurant>>([]);
+  const [restaurants, setRestaurants] = useState<Array<RestaurantListItem>>(
+    [],
+  );
 
   useEffect(() => {
     if (isFocused) {
@@ -253,108 +260,121 @@ const RestaurantList = () => {
 
         {/* -- Restaurant cards -- */}
         <View style={styles.cardsList}>
-          {restaurants.map(restaurant => (
-            <TouchableOpacity
-              key={restaurant?.id}
-              activeOpacity={0.9}
-              style={styles.card}
-              onPress={() =>
-                navigation.navigate('RestaurantDetails', { id: restaurant?.id })
-              }
-            >
-              {/* Hero image area */}
-              <View style={styles.cardHero}>
-                <Image
-                  source={{ uri: Constant?.ImageURL + restaurant?.image }}
-                  style={styles.cardImage}
-                />
-                <LinearGradient
-                  colors={[
-                    'rgba(18, 20, 24, 0.8)',
-                    'rgba(18, 20, 24, 0)',
-                    'rgba(18, 20, 24, 0)',
-                  ]}
-                  start={{ x: 0.5, y: 0 }}
-                  end={{ x: 0.5, y: 1 }}
-                  style={styles.cardImageGradient}
-                />
-                <View
-                  style={[
-                    styles.cardTopRow,
-                    restaurant?.hasVip === false
-                      ? styles.cardTopRowNoBadge
-                      : null,
-                  ]}
-                >
-                  {restaurant?.hasVip !== false ? (
-                    <View style={styles.vipBadge}>
-                      <View style={styles.vipDot} />
-                      <Text style={styles.vipText}>VIP Delivery Available</Text>
-                    </View>
-                  ) : null}
-                  <TouchableOpacity
-                    style={styles.likeButton}
-                    activeOpacity={0.85}
+          {restaurants.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateTitle}>No restaurants found</Text>
+              <Text style={styles.emptyStateText}>
+                We could not find any restaurants for your current location.
+              </Text>
+            </View>
+          ) : (
+            restaurants.map(restaurant => (
+              <TouchableOpacity
+                key={restaurant?.id}
+                activeOpacity={0.9}
+                style={styles.card}
+                onPress={() =>
+                  navigation.navigate('RestaurantDetails', {
+                    id: restaurant?.id,
+                  })
+                }
+              >
+                {/* Hero image area */}
+                <View style={styles.cardHero}>
+                  <Image
+                    source={{ uri: Constant?.ImageURL + restaurant?.image }}
+                    style={styles.cardImage}
+                  />
+                  <LinearGradient
+                    colors={[
+                      'rgba(18, 20, 24, 0.8)',
+                      'rgba(18, 20, 24, 0)',
+                      'rgba(18, 20, 24, 0)',
+                    ]}
+                    start={{ x: 0.5, y: 0 }}
+                    end={{ x: 0.5, y: 1 }}
+                    style={styles.cardImageGradient}
+                  />
+                  <View
+                    style={[
+                      styles.cardTopRow,
+                      restaurant?.hasVip === false
+                        ? styles.cardTopRowNoBadge
+                        : null,
+                    ]}
                   >
-                    <Heart size={20} color="#FFFFFF" strokeWidth={2} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Card body */}
-              <View style={styles.cardBody}>
-                <View style={styles.cardTitleRow}>
-                  <Text style={styles.cardTitle}>{restaurant?.name}</Text>
-                  <View style={styles.ratingBadge}>
-                    <Star
-                      size={12}
-                      color={colors.primary}
-                      fill={colors.primary}
-                      strokeWidth={1.8}
-                    />
-                    <Text style={styles.ratingText}>{restaurant?.rating}</Text>
+                    {restaurant?.hasVip !== false ? (
+                      <View style={styles.vipBadge}>
+                        <View style={styles.vipDot} />
+                        <Text style={styles.vipText}>VIP Delivery Available</Text>
+                      </View>
+                    ) : null}
+                    <TouchableOpacity
+                      style={styles.likeButton}
+                      activeOpacity={0.85}
+                    >
+                      <Heart size={20} color="#FFFFFF" strokeWidth={2} />
+                    </TouchableOpacity>
                   </View>
                 </View>
 
-                <Text style={styles.cardDetails}>{restaurant?.details}</Text>
-
-                {/* <View style={styles.cardFooter}>
-                  {restaurant.leftFooterText ? (
-                    <Text style={styles.leftFooterText}>
-                      {restaurant.leftFooterText}
-                    </Text>
-                  ) : (
-                    <View style={styles.avatarsRow}>
-                      {crowdAvatars.map((uri, index) => (
-                        <View
-                          key={uri}
-                          style={[
-                            styles.avatarStack,
-                            {
-                              marginLeft: index === 0 ? 0 : -8,
-                              zIndex: crowdAvatars.length - index,
-                            },
-                          ]}
-                        >
-                          <Image
-                            source={{ uri }}
-                            style={styles.avatarStackImage}
-                          />
-                        </View>
-                      ))}
-                      <View style={styles.countBubble}>
-                        <Text style={styles.countBubbleText}>
-                          {restaurant.crowdCount}
-                        </Text>
-                      </View>
+                {/* Card body */}
+                <View style={styles.cardBody}>
+                  <View style={styles.cardTitleRow}>
+                    <Text style={styles.cardTitle}>{restaurant?.name}</Text>
+                    <View style={styles.ratingBadge}>
+                      <Star
+                        size={12}
+                        color={colors.primary}
+                        fill={colors.primary}
+                        strokeWidth={1.8}
+                      />
+                      <Text style={styles.ratingText}>{restaurant?.rating}</Text>
                     </View>
-                  )}
+                  </View>
 
-                  <Text style={styles.insightText}>{restaurant.insight}</Text>
-                </View> */}
-              </View>
-            </TouchableOpacity>
-          ))}
+                  <Text style={styles.cardDetails}>
+                    {restaurant?.details || restaurant?.address || ''}
+                  </Text>
+
+                  {/* <View style={styles.cardFooter}>
+                    {restaurant.leftFooterText ? (
+                      <Text style={styles.leftFooterText}>
+                        {restaurant.leftFooterText}
+                      </Text>
+                    ) : (
+                      <View style={styles.avatarsRow}>
+                        {crowdAvatars.map((uri, index) => (
+                          <View
+                            key={uri}
+                            style={[
+                              styles.avatarStack,
+                              {
+                                marginLeft: index === 0 ? 0 : -8,
+                                zIndex: crowdAvatars.length - index,
+                              },
+                            ]}
+                          >
+                            <Image
+                              source={{ uri }}
+                              style={styles.avatarStackImage}
+                            />
+                          </View>
+                        ))}
+                        <View style={styles.countBubble}>
+                          <Text style={styles.countBubbleText}>
+                            {restaurant.crowdCount}
+                          </Text>
+                        </View>
+                      </View>
+                    )}
+
+                    <Text style={styles.insightText}>{restaurant.insight}</Text>
+                  </View> */}
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -473,6 +493,32 @@ const styles = StyleSheet.create({
   /* -- Restaurant cards -- */
   cardsList: {
     gap: 32,
+  },
+  emptyState: {
+    minHeight: 160,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 28,
+    marginTop: '25%',
+  },
+  emptyStateTitle: {
+    color: colors.textPrimary,
+    fontSize: typography.lg,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    marginTop: 8,
+    color: colors.textMuted,
+    fontSize: typography.body,
+    lineHeight: 21,
+    textAlign: 'center',
   },
   card: {
     borderRadius: 24,

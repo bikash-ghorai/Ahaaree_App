@@ -6,7 +6,7 @@ export type IUser = {
   picture: string | null;
   phone: string;
   referred_by: string | null;
-  balance: string | number;
+  balance: number;
   zone: string;
   last_login: string | null;
   type: string;

@@ -24,7 +24,7 @@ import {
 import { colors, layout, typography } from '../constants/theme';
 import Header from '../components/Header';
 
-const supportPhone = '+1 (415) 555-0175';
+const supportPhone = '+91 9134331144';
 const supportPhoneDigits = supportPhone.replace(/\D/g, '');
 const supportEmail = 'support@biteo.app';
 const whatsappUrl = `https://wa.me/${supportPhoneDigits}`;
